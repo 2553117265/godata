@@ -1,0 +1,77 @@
+version: 0.2
+
+env:
+  exported-variables:
+    - CODEBUILD_BUILD_ID
+
+phases:
+  build:
+    commands:
+      - AMD_TAR_FILE_PATH="${CODEBUILD_SRC_DIR_SignedArtifact}/ecs-agent-v${AGENT_VERSION}.tar"
+      - ARM_TAR_FILE_PATH="${CODEBUILD_SRC_DIR_SignedArtifact}/ecs-agent-arm64-v${AGENT_VERSION}.tar"
+      - AMD_TAR_FILE="ecs-agent-v${AGENT_VERSION}.tar"
+      - ARM_TAR_FILE="ecs-agent-arm64-v${AGENT_VERSION}.tar"
+      
+      # Checksum commands output checksum followed by filename
+      # Taking the checksum out explicitly using string length
+      - AMD_MD5_CMD=$(md5sum $AMD_TAR_FILE_PATH)
+      - AMD_MD5_CHECKSUM=${AMD_MD5_CMD::32}
+      - AMD_SHA256_CMD=$(sha256sum $AMD_TAR_FILE_PATH)
+      - AMD_SHA256_CHECKSUM=${AMD_SHA256_CMD::64}
+
+      - ARM_MD5_CMD=$(md5sum $ARM_TAR_FILE_PATH)
+      - ARM_MD5_CHECKSUM=${ARM_MD5_CMD::32}
+      - ARM_SHA256_CMD=$(sha256sum $ARM_TAR_FILE_PATH)
+      - ARM_SHA256_CHECKSUM=${ARM_SHA256_CMD::64}
+
+      - RELEASE_DATE=$(date +'%Y%m%d')
+
+      # Prepare agent.json config file
+      # TODO initStagingConfig.release version configurable
+      - |
+        cat << EOF > agent.json
+        {
+          "agentReleaseVersion" : "$AGENT_VERSION",
+          "releaseDate" : "$RELEASE_DATE",
+          "initStagingConfig": {
+            "release": "1"
+          },
+          "agentStagingConfig": {
+            "releaseGitSha": "$GIT_COMMIT_SHA",
+            "releaseGitShortSha": "$GIT_COMMIT_SHORT_SHA",
+            "gitFarmRepoName": "MadisonContainerAgentExternal",
+            "gitHubRepoName": "aws/amazon-ecs-agent",
+            "gitFarmStageBranch": "v${AGENT_VERSION}-stage",
+            "githubReleaseUrl": ""
+          },
+          "amazonLinux": {
+            "artifactFilename": "${AMD_TAR_FILE}",
+            "md5": "${AMD_MD5_CHECKSUM}",
+            "signature": "${AMD_SHA256_CHECKSUM}"
+          },
+          "amazonLinux2Arm": {
+            "artifactFilename": "${ARM_TAR_FILE}",
+            "md5": "${ARM_MD5_CHECKSUM}",
+            "signature": "${ARM_SHA256_CHECKSUM}"
+          }
+        }
+        EOF
+
+      # Copying over the existing agentVersionV2-<branch>.json file
+      - aws s3 cp ${RESULTS_BUCKET_URI}/agentVersionV2/agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}.json ./agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}.json
+      # Grabbing the old release agent version (will be the new current agent version)
+      - CURR_VER=$(jq -r '.agentReleaseVersion' agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}.json)
+
+      # Checking to see if there's a new release agent version to be released
+      - |
+        if [[ ! $AGENT_VERSION =~ "${CURR_VER}" ]] ; then
+          # Updating the agentVersionV2-<branch>.json file with new current and release agent versions and copying it to a temp file
+          cat <<< $(jq '.agentReleaseVersion = '\"$AGENT_VERSION\"' | .agentCurrentVersion = '\"$CURR_VER\"'' agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}.json) > agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}-COPY.json
+          # Replace existing agentVersionV2-<branch>.json file with the temp file
+          jq . agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}-COPY.json > agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}.json
+        fi
+
+artifacts:
+  files:
+    - agent.json
+    - agentVersionV2-${GITHUB_SOURCE_BRANCH_NAME}.json
