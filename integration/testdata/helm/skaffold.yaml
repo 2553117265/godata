@@ -1,0 +1,26 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+build:
+  tagPolicy:
+    sha256: {}
+  artifacts:
+  - image: gcr.io/k8s-skaffold/skaffold-helm
+deploy:
+  helm:
+    releases:
+    # seed test namespace in the release name.
+    - name: skaffold-helm-{{.TEST_NS}}
+      chartPath: skaffold-helm
+      #wait: true
+      #valuesFiles:
+      #- helm-skaffold-values.yaml
+profiles:
+- name: helm-render
+  deploy:
+    helm:
+      releases:
+      # seed test namespace in the release name.
+      - name: skaffold-helm-{{.TEST_NS}}
+        chartPath: skaffold-helm
+        setValues:
+          pullPolicy: always

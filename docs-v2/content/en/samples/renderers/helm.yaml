@@ -1,0 +1,5 @@
+manifests:
+  helm:
+    releases:
+    - name: skaffold-helm
+      chartPath: skaffold-helm

@@ -1,0 +1,14 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+build:
+  artifacts:
+    - image: skaffold-example
+      kaniko:
+        target: runner
+        cache: {}
+  cluster:
+    pullSecretName: e2esecret
+    namespace: default
+manifests:
+  rawYaml:
+  - k8s-*

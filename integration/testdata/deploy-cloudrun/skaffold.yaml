@@ -1,0 +1,11 @@
+apiVersion: skaffold/v4beta1 
+kind: Config
+metadata:
+   name: cloud-run-test
+manifests:
+  rawYaml:
+    - service.yaml
+deploy:
+  cloudrun:
+    projectid: k8s-skaffold
+    region: us-central1

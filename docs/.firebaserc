@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "k8s-skaffold": {
+      "hosting": {
+        "release": [
+          "skaffold-v1"
+        ],
+        "head": [
+          "skaffold-latest"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: allcli
+build:
+  artifacts:
+    - image: passed-in-artifact
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - manifest-placeholder1.yaml
+    - manifest-placeholder2.yaml

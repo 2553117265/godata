@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: windows
+build:
+  artifacts:
+  - image: gcr.io/k8s-skaffold/leeroy-web
+    context: apps/web
+    docker:
+      dockerfile: build/Dockerfile
+manifests:
+  rawYaml:
+    - apps/web/deployment.yaml

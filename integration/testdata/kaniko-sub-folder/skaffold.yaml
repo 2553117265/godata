@@ -1,0 +1,9 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+build:
+  artifacts:
+    - image: skaffold-example-sub
+      context: sub
+      kaniko: {}
+  cluster:
+    pullSecretName: e2esecret

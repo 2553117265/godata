@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+requires:
+- path: ./skaffold2.yaml
+- path: ./skaffold3.yaml
+build:
+  artifacts:
+  - image: app1
+    context: foo
+manifests:
+  rawYaml:
+  - /k8s/*
