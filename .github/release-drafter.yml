@@ -1,0 +1,17 @@
+_extends: gofiber/.github:release-drafter.yml
+commitish: main
+filter-by-commitish: true
+include-labels:
+  - 'v3'
+exclude-labels:
+  - 'v2'
+template: |
+    $CHANGES
+
+    **📒 Documentation**: https://docs.gofiber.io/next/
+
+    **💬 Discord**: https://gofiber.io/discord
+
+    **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+    Thank you $CONTRIBUTORS for making this release possible.
