@@ -1,0 +1,21 @@
+bin
+.mockgen
+.cache
+.golangci-bin
+.coverage/
+
+.DS_Store
+
+# VIM
+.*.swp
+
+# Emacs
+*~
+
+.idea/
+.vscode/
+vendor
+
+plugins/grafana-sankey-plugin/node_modules/
+plugins/grafana-sankey-plugin/dist/
+plugins/grafana-sankey-plugin/coverage/
